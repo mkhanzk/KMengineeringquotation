@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Quotation - K.M. Engineering Works</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 20px;
+    background: #f4f6f8;
+}
+
+@page {
+    size: A4;
+    margin: 15mm;
+}
+
+.container {
+    background: white;
+    padding: 20px;
+    border: 2px solid #2c3e50;
+}
+
+/* Header */
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+h2 {
+    text-align: center;
+    margin-top: 0;
+    color: #34495e;
+}
+
+/* Address centered */
+.address {
+    text-align: center;
+    font-size: 15px;
+    font-weight: bold;
+    line-height: 1.5;
+}
+
+/* Top row */
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+/* Inputs */
+input {
+    border: none;
+    border-bottom: 1px solid #555;
+}
+
+/* Contact */
+.contact {
+    border: none;
+    font-weight: bold;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+th {
+    background: #2c3e50;
+    color: white;
+    padding: 8px;
+    border: 1px solid black;
+}
+
+td {
+    border: 1px solid black;
+    padding: 6px;
+    text-align: center;
+}
+
+/* Clean table inputs */
+td input {
+    border: none !important;
+    outline: none;
+    background: transparent;
+    text-align: center;
+}
+
+/* Footer rows */
+tfoot td {
+    font-weight: bold;
+    background: #ecf0f1;
+}
+
+.right {
+    text-align: right;
+}
+
+/* Buttons */
+button {
+    margin-top: 10px;
+    padding: 10px;
+    background: #2c3e50;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+@media print {
+    body { background: white; }
+    button { display: none; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>QUOTATION</h1>
+<h2>K.M. ENGINEERING WORKS</h2>
+
+<div class="address">
+Plot No. 733, Gala No. 3, Ground Floor, Modi Compound, Mazgaon - 400010<br>
+K. R. Mhatre Marg, Opp. Reay Road Station
+<br>
+<strong>Contact Number:</strong>
+<input class="contact" type="text" value="9819552260 / 8451080507">
+</div>
+
+<br>
+
+<div class="top-row">
+    <div>
+        <strong>Date:</strong> <input type="date">
+    </div>
+    <div>
+        <strong>GST No:</strong> <input type="text" value="27CDNPK4241H1ZF">
+    </div>
+</div>
+
+<br>
+
+
+<table>
+<thead>
+<tr>
+    <th>Sr No</th>
+    <th>Description</th>
+    <th>Qty</th>
+    <th>Rate</th>
+    <th>Amount</th>
+</tr>
+</thead>
+
+<tbody id="items">
+<tr>
+    <td>1</td>
+    <td><input type="text"></td>
+    <td><input type="number" oninput="calculate()"></td>
+    <td><input type="number" oninput="calculate()"></td>
+    <td class="amount">0</td>
+</tr>
+</tbody>
+
+<tfoot>
+<tr>
+    <td colspan="4" class="right">Subtotal</td>
+    <td id="subtotal">0</td>
+</tr>
+
+<tr>
+    <td colspan="4" class="right">GST (18%)</td>
+    <td id="gst">0</td>
+</tr>
+
+<!-- Transport Row (Optional) -->
+<tr id="transportRow" style="display:none;">
+    <td colspan="4" class="right">Transport</td>
+    <td><input type="number" id="transport" oninput="calculate()"></td>
+</tr>
+
+<tr>
+    <td colspan="4" class="right">Total</td>
+    <td id="total">0</td>
+</tr>
+</tfoot>
+
+</table>
+<br><br>
+
+<div style="display: flex; justify-content: flex-end;">
+    <div style="width: 250px; text-align: center;">
+        
+        <div style="border: 1px solid black; height: 30px; margin-bottom: 6px;">
+            <!-- Signature space -->
+        </div>
+
+        <strong>K.M. ENGINEERING WORKS</strong>
+    </div>
+</div>
+
+<button onclick="addRow()">Add Item</button>
+<button onclick="toggleTransport()">Add Transport</button>
+<button onclick="window.print()">Print / Save PDF</button>
+
+</div>
+
+<script>
+function calculate() {
+    let rows = document.querySelectorAll("#items tr");
+    let subtotal = 0;
+
+    rows.forEach(row => {
+        let qty = row.children[2].children[0].value || 0;
+        let rate = row.children[3].children[0].value || 0;
+        let amount = qty * rate;
+
+        row.querySelector(".amount").innerText = amount;
+        subtotal += amount;
+    });
+
+    let gst = subtotal * 0.18;
+
+    let transport = document.getElementById("transport")?.value || 0;
+
+    let total = subtotal + gst + Number(transport);
+
+    document.getElementById("subtotal").innerText = subtotal.toFixed(2);
+    document.getElementById("gst").innerText = gst.toFixed(2);
+    document.getElementById("total").innerText = total.toFixed(2);
+}
+
+function addRow() {
+    let table = document.getElementById("items");
+    let rowCount = table.rows.length + 1;
+
+    let row = table.insertRow();
+
+    row.innerHTML = `
+        <td>${rowCount}</td>
+        <td><input type="text"></td>
+        <td><input type="number" oninput="calculate()"></td>
+        <td><input type="number" oninput="calculate()"></td>
+        <td class="amount">0</td>
+    `;
+}
+
+/* Toggle Transport Row */
+function toggleTransport() {
+    let row = document.getElementById("transportRow");
+
+    if (row.style.display === "none") {
+        row.style.display = "table-row";
+    } else {
+        row.style.display = "none";
+        document.getElementById("transport").value = 0;
+        calculate();
+    }
+}
+</script>
+
+</body>
+</html>
