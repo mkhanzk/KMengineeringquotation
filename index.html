@@ -11,13 +11,11 @@ body {
     background: #f4f6f8;
 }
 
-/* A4 setup */
 @page {
     size: A4;
     margin: 10mm;
 }
 
-/* Perfect A4 container */
 .container {
     width: 210mm;
     min-height: 297mm;
@@ -32,7 +30,6 @@ body {
 h1 {
     text-align: center;
     color: #2c3e50;
-    margin-bottom: 5px;
 }
 
 h2 {
@@ -89,10 +86,9 @@ td {
     text-align: center;
 }
 
-/* TEXT WRAP FIX (important) */
+/* Wrap fix */
 td, th {
     word-break: break-word;
-    overflow-wrap: break-word;
 }
 
 /* Column widths */
@@ -102,18 +98,27 @@ th:nth-child(3), td:nth-child(3) { width: 12%; }
 th:nth-child(4), td:nth-child(4) { width: 15%; }
 th:nth-child(5), td:nth-child(5) { width: 20%; }
 
-/* Clean inputs */
+/* Inputs inside table */
 td input {
-    border: none !important;
-    outline: none;
-    background: transparent;
+    border: none;
     width: 100%;
+    background: transparent;
 }
 
-/* Description wrapping */
-td:nth-child(2) input {
+/* TEXTAREA FIX */
+td textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: none;
+    overflow: hidden;
+    font-family: Arial;
+    font-size: 14px;
+    background: transparent;
+}
+
+td:nth-child(2) textarea {
     text-align: left;
-    white-space: normal;
 }
 
 /* Footer */
@@ -136,21 +141,11 @@ button {
     cursor: pointer;
 }
 
-/* Print fix */
+/* Print */
 @media print {
-    body {
-        background: white;
-    }
-
-    .container {
-        border: none;
-        margin: 0;
-        width: 100%;
-    }
-
-    button {
-        display: none;
-    }
+    body { background: white; }
+    .container { border: none; width: 100%; }
+    button { display: none; }
 }
 </style>
 </head>
@@ -181,9 +176,6 @@ K. R. Mhatre Marg, Opp. Reay Road Station
     </div>
 </div>
 
-<br>
-
-
 <table>
 <thead>
 <tr>
@@ -198,7 +190,7 @@ K. R. Mhatre Marg, Opp. Reay Road Station
 <tbody id="items">
 <tr>
     <td>1</td>
-    <td><input type="text"></td>
+    <td><textarea rows="2" oninput="autoResize(this)"></textarea></td>
     <td><input type="number" oninput="calculate()"></td>
     <td><input type="number" oninput="calculate()"></td>
     <td class="amount">0</td>
@@ -216,7 +208,6 @@ K. R. Mhatre Marg, Opp. Reay Road Station
     <td id="gst">0</td>
 </tr>
 
-<!-- Transport Row (Optional) -->
 <tr id="transportRow" style="display:none;">
     <td colspan="4" class="right">Transport</td>
     <td><input type="number" id="transport" oninput="calculate()"></td>
@@ -229,15 +220,12 @@ K. R. Mhatre Marg, Opp. Reay Road Station
 </tfoot>
 
 </table>
+
 <br><br>
 
 <div style="display: flex; justify-content: flex-end;">
     <div style="width: 250px; text-align: center;">
-        
-        <div style="border: 1px solid black; height: 30px; margin-bottom: 6px;">
-            <!-- Signature space -->
-        </div>
-
+        <div style="border: 1px solid black; height: 40px; margin-bottom: 6px;"></div>
         <strong>K.M. ENGINEERING WORKS</strong>
     </div>
 </div>
@@ -263,9 +251,7 @@ function calculate() {
     });
 
     let gst = subtotal * 0.18;
-
     let transport = document.getElementById("transport")?.value || 0;
-
     let total = subtotal + gst + Number(transport);
 
     document.getElementById("subtotal").innerText = subtotal.toFixed(2);
@@ -281,14 +267,13 @@ function addRow() {
 
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><input type="text"></td>
+        <td><textarea rows="2" oninput="autoResize(this)"></textarea></td>
         <td><input type="number" oninput="calculate()"></td>
         <td><input type="number" oninput="calculate()"></td>
         <td class="amount">0</td>
     `;
 }
 
-/* Toggle Transport Row */
 function toggleTransport() {
     let row = document.getElementById("transportRow");
 
@@ -299,6 +284,12 @@ function toggleTransport() {
         document.getElementById("transport").value = 0;
         calculate();
     }
+}
+
+/* Auto resize textarea */
+function autoResize(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
 }
 </script>
 
