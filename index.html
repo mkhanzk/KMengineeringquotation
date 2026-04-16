@@ -11,19 +11,19 @@ body {
     background: #f4f6f8;
 }
 
+/* A4 */
 @page {
     size: A4;
     margin: 10mm;
 }
 
+/* FIXED CONTAINER (no overflow now) */
 .container {
-    width: 210mm;
-    min-height: 297mm;
+    max-width: 190mm;
     margin: auto;
     background: white;
-    padding: 12mm;
+    padding: 10mm;
     box-sizing: border-box;
-    border: 2px solid #2c3e50;
 }
 
 /* Header */
@@ -43,7 +43,6 @@ h2 {
     text-align: center;
     font-size: 15px;
     font-weight: bold;
-    line-height: 1.5;
 }
 
 /* Top row */
@@ -59,7 +58,6 @@ input {
     border-bottom: 1px solid #555;
 }
 
-/* Contact */
 .contact {
     border: none;
     font-weight: bold;
@@ -98,27 +96,21 @@ th:nth-child(3), td:nth-child(3) { width: 12%; }
 th:nth-child(4), td:nth-child(4) { width: 15%; }
 th:nth-child(5), td:nth-child(5) { width: 20%; }
 
-/* Inputs inside table */
+/* Inputs */
 td input {
     border: none;
     width: 100%;
     background: transparent;
 }
 
-/* TEXTAREA FIX */
+/* TEXTAREA */
 td textarea {
     width: 100%;
     border: none;
     outline: none;
     resize: none;
     overflow: hidden;
-    font-family: Arial;
-    font-size: 14px;
     background: transparent;
-}
-
-td:nth-child(2) textarea {
-    text-align: left;
 }
 
 /* Footer */
@@ -131,8 +123,8 @@ tfoot td {
     text-align: right;
 }
 
-/* Buttons */
-button {
+/* BUTTON FIX */
+.no-print {
     margin-top: 10px;
     padding: 10px;
     background: #2c3e50;
@@ -141,26 +133,29 @@ button {
     cursor: pointer;
 }
 
-/* Print */
+/* REMOVE PAGE BREAK ISSUES */
+table, tr, td {
+    page-break-inside: avoid;
+}
+
+/* PRINT FIX */
 @media print {
     body { background: white; }
-    .container { border: none; width: 100%; }
-    button { display: none; }
+    .no-print { display: none !important; }
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container" id="printArea">
 
 <h1>QUOTATION</h1>
 <h2>K.M. ENGINEERING WORKS</h2>
 
 <div class="address">
 Plot No. 733, Gala No. 3, Ground Floor, Modi Compound, Mazgaon - 400010<br>
-K. R. Mhatre Marg, Opp. Reay Road Station
-<br>
+K. R. Mhatre Marg, Opp. Reay Road Station<br>
 <strong>Contact Number:</strong>
 <input class="contact" type="text" value="9819552260 / 8451080507">
 </div>
@@ -218,24 +213,25 @@ K. R. Mhatre Marg, Opp. Reay Road Station
     <td id="total">0</td>
 </tr>
 </tfoot>
-
 </table>
 
 <br><br>
 
 <div style="display: flex; justify-content: flex-end;">
     <div style="width: 250px; text-align: center;">
-        <div style="border: 1px solid black; height: 40px; margin-bottom: 6px;"></div>
+        <div style="border: 1px solid black; height: 40px;"></div>
         <strong>K.M. ENGINEERING WORKS</strong>
     </div>
 </div>
 
-<button onclick="addRow()">Add Item / आइटम जोड़ें</button>
-
-<button onclick="toggleTransport()">Add Transport / ट्रांसपोर्ट जोड़ें</button>
-
-<button onclick="downloadPDF()">Download PDF / पीडीएफ डाउनलोड करें</button>
 </div>
+
+<!-- BUTTONS -->
+<button class="no-print" onclick="addRow()">Add Item / आइटम जोड़ें</button>
+<button class="no-print" onclick="toggleTransport()">Add Transport / ट्रांसपोर्ट जोड़ें</button>
+<button class="no-print" onclick="downloadPDF()">Download PDF / पीडीएफ डाउनलोड करें</button>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
 function calculate() {
@@ -268,7 +264,7 @@ function addRow() {
 
     row.innerHTML = `
         <td>${rowCount}</td>
-        <td><textarea rows="2" oninput="autoResize(this)"></textarea></td>
+        <td><textarea rows="1" oninput="autoResize(this)"></textarea></td>
         <td><input type="number" oninput="calculate()"></td>
         <td><input type="number" oninput="calculate()"></td>
         <td class="amount">0</td>
@@ -287,25 +283,29 @@ function toggleTransport() {
     }
 }
 
-/* Auto resize textarea */
+/* Auto resize */
 function autoResize(el) {
     el.style.height = "auto";
     el.style.height = el.scrollHeight + "px";
 }
-    function downloadPDF() {
-    const element = document.querySelector(".container");
 
-    const opt = {
-        margin:       5,
-        filename:     'Quotation.pdf',
-        image:        { type: 'jpeg', quality: 1 },
-        html2canvas:  { scale: 2 },
-        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-    };
+/* CLEAN PDF DOWNLOAD */
+function downloadPDF() {
+    const buttons = document.querySelectorAll('.no-print');
+    buttons.forEach(btn => btn.style.display = 'none');
 
-    html2pdf().set(opt).from(element).save();
+    const element = document.getElementById("printArea");
+
+    html2pdf().set({
+        margin: 5,
+        filename: 'Quotation.pdf',
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    }).from(element).save().then(() => {
+        buttons.forEach(btn => btn.style.display = 'inline-block');
+    });
 }
 </script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
 </body>
 </html>
