@@ -99,8 +99,20 @@ th:nth-child(1), td:nth-child(1) { width: 7%; }
 th:nth-child(2), td:nth-child(2) { width: 40%; text-align: left; }
 th:nth-child(3), td:nth-child(3) { width: 11%; }
 th:nth-child(4), td:nth-child(4) { width: 14%; }
-th:nth-child(5), td:nth-child(5) { width: 18%; }
+th:nth-child(5), td:nth-child(5) { width: 18%; text-align: right; }
 th:nth-child(6), td:nth-child(6) { width: 10%; }
+
+/* Right-align all monetary values and keep digit widths consistent
+   so the decimal points line up vertically down the column */
+.amount,
+#subtotal,
+#gst,
+#total,
+#transport {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    padding-right: 10px;
+}
 
 /* Inputs */
 td input {
@@ -108,6 +120,14 @@ td input {
     width: 100%;
     background: transparent;
     text-align: center;
+    font: inherit;
+    color: inherit;
+}
+
+/* Transport amount should look like the other bold footer values */
+#transport {
+    text-align: right;
+    font-weight: bold;
 }
 
 /* TEXTAREA */
