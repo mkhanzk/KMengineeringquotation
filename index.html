@@ -221,7 +221,7 @@ K. R. Mhatre Marg, Opp. Reay Road Station<br>
     <th>Qty</th>
     <th>Rate</th>
     <th>Amount</th>
-    <th class="no-print-col">Action</th>
+    <th class="no-print">Action</th>
 </tr>
 </thead>
 
@@ -417,8 +417,12 @@ function autoResize(el) {
 
 /* CLEAN PDF DOWNLOAD */
 function downloadPDF() {
-    const buttons = document.querySelectorAll('.no-print');
-    buttons.forEach(btn => btn.style.display = 'none');
+    // Remember each hidden element's original inline display so it can be restored exactly.
+    const hidden = Array.from(document.querySelectorAll('.no-print')).map(el => {
+        const original = el.style.display;
+        el.style.display = 'none';
+        return { el, original };
+    });
 
     const element = document.getElementById("printArea");
 
@@ -428,8 +432,7 @@ function downloadPDF() {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).from(element).save().then(() => {
-        buttons.forEach(btn => btn.style.display = btn.classList.contains('actions-col') ? '' : 'inline-block');
-        document.querySelectorAll('.actions-col.no-print').forEach(td => td.style.display = '');
+        hidden.forEach(({ el, original }) => { el.style.display = original; });
     });
 }
 </script>
