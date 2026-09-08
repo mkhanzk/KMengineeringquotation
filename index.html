@@ -46,10 +46,15 @@ h2 {
 }
 
 /* Top row */
+#dateInput {
+    cursor: pointer;
+    background: white;
+}
 .top-row {
     display: flex;
     justify-content: space-between;
     margin-top: 10px;
+    position: relative;
 }
 
 /* Inputs */
@@ -90,17 +95,19 @@ td, th {
 }
 
 /* Column widths */
-th:nth-child(1), td:nth-child(1) { width: 8%; }
-th:nth-child(2), td:nth-child(2) { width: 45%; text-align: left; }
-th:nth-child(3), td:nth-child(3) { width: 12%; }
-th:nth-child(4), td:nth-child(4) { width: 15%; }
-th:nth-child(5), td:nth-child(5) { width: 20%; }
+th:nth-child(1), td:nth-child(1) { width: 7%; }
+th:nth-child(2), td:nth-child(2) { width: 40%; text-align: left; }
+th:nth-child(3), td:nth-child(3) { width: 11%; }
+th:nth-child(4), td:nth-child(4) { width: 14%; }
+th:nth-child(5), td:nth-child(5) { width: 18%; }
+th:nth-child(6), td:nth-child(6) { width: 10%; }
 
 /* Inputs */
 td input {
     border: none;
     width: 100%;
     background: transparent;
+    text-align: center;
 }
 
 /* TEXTAREA */
@@ -123,6 +130,37 @@ tfoot td {
     text-align: right;
 }
 
+/* Delete button in row */
+.delete-btn {
+    background: #c0392b;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+}
+.delete-btn:hover {
+    background: #922b21;
+}
+
+/* Note section */
+.note-box {
+    margin-top: 15px;
+    padding: 8px 10px;
+    border: 1px dashed #999;
+    background: #fffbe6;
+    font-size: 14px;
+}
+.note-box input[type="number"] {
+    width: 55px;
+    text-align: center;
+    border-bottom: 1px solid #555;
+    font-weight: bold;
+}
+
 /* BUTTON FIX */
 .no-print {
     margin-top: 10px;
@@ -142,6 +180,8 @@ table, tr, td {
 @media print {
     body { background: white; }
     .no-print { display: none !important; }
+    .delete-btn { display: none !important; }
+    th:last-child, td:last-child.actions-col { display: none !important; }
 }
 </style>
 </head>
@@ -164,7 +204,9 @@ K. R. Mhatre Marg, Opp. Reay Road Station<br>
 
 <div class="top-row">
     <div>
-        <strong>Date:</strong> <input type="date">
+        <strong>Date:</strong>
+        <input type="text" id="dateInput" placeholder="DD-MM-YYYY" readonly onclick="openDatePicker()">
+        <input type="date" id="datePicker" style="position:absolute; opacity:0; width:1px; height:1px; pointer-events:none;" onchange="applyPickedDate(this)">
     </div>
     <div>
         <strong>GST No:</strong> <input type="text" value="27CDNPK4241H1ZF">
@@ -179,41 +221,52 @@ K. R. Mhatre Marg, Opp. Reay Road Station<br>
     <th>Qty</th>
     <th>Rate</th>
     <th>Amount</th>
+    <th class="no-print-col">Action</th>
 </tr>
 </thead>
 
 <tbody id="items">
 <tr>
-    <td>1</td>
+    <td class="sr">1</td>
     <td><textarea rows="1" oninput="autoResize(this)"></textarea></td>
-    <td><input type="number" oninput="calculate()"></td>
-    <td><input type="number" oninput="calculate()"></td>
-    <td class="amount">0</td>
+    <td><input type="number" min="0" oninput="calculate()"></td>
+    <td><input type="number" min="0" oninput="calculate()"></td>
+    <td class="amount">0.00</td>
+    <td class="actions-col no-print"><button class="delete-btn" onclick="deleteRow(this)" title="Delete row">✕</button></td>
 </tr>
 </tbody>
 
 <tfoot>
 <tr>
     <td colspan="4" class="right">Subtotal</td>
-    <td id="subtotal">0</td>
+    <td id="subtotal">0.00</td>
+    <td class="no-print"></td>
 </tr>
 
 <tr>
     <td colspan="4" class="right">GST (18%)</td>
-    <td id="gst">0</td>
+    <td id="gst">0.00</td>
+    <td class="no-print"></td>
 </tr>
 
 <tr id="transportRow" style="display:none;">
     <td colspan="4" class="right">Transport</td>
-    <td><input type="number" id="transport" oninput="calculate()"></td>
+    <td><input type="number" min="0" id="transport" oninput="calculate()"></td>
+    <td class="no-print"></td>
 </tr>
 
 <tr>
     <td colspan="4" class="right">Total</td>
-    <td id="total">0</td>
+    <td id="total">0.00</td>
+    <td class="no-print"></td>
 </tr>
 </tfoot>
 </table>
+
+<!-- ADVANCE PAYMENT NOTE -->
+<div class="note-box no-print-target" id="noteBox" style="display:none;">
+    Note: <input type="number" id="advancePercent" min="1" value="50" oninput="updateNoteText()">% advance payment is required.
+</div>
 
 <br><br>
 
@@ -229,31 +282,43 @@ K. R. Mhatre Marg, Opp. Reay Road Station<br>
 <!-- BUTTONS -->
 <button class="no-print" onclick="addRow()">Add Item / आइटम जोड़ें</button>
 <button class="no-print" onclick="toggleTransport()">Add Transport / ट्रांसपोर्ट जोड़ें</button>
+<button class="no-print" onclick="toggleNote()">Add Note / नोट जोड़ें</button>
 <button class="no-print" onclick="downloadPDF()">Download PDF / पीडीएफ डाउनलोड करें</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
+function formatCurrency(num) {
+    return Number(num).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 function calculate() {
     let rows = document.querySelectorAll("#items tr");
     let subtotal = 0;
 
     rows.forEach(row => {
-        let qty = row.children[2].children[0].value || 0;
-        let rate = row.children[3].children[0].value || 0;
+        let qty = Math.max(0, parseFloat(row.children[2].children[0].value) || 0);
+        let rate = Math.max(0, parseFloat(row.children[3].children[0].value) || 0);
         let amount = qty * rate;
 
-        row.querySelector(".amount").innerText = amount;
+        row.querySelector(".amount").innerText = formatCurrency(amount);
         subtotal += amount;
     });
 
     let gst = subtotal * 0.18;
-    let transport = document.getElementById("transport")?.value || 0;
-    let total = subtotal + gst + Number(transport);
+    let transport = Math.max(0, parseFloat(document.getElementById("transport")?.value) || 0);
+    let total = subtotal + gst + transport;
 
-    document.getElementById("subtotal").innerText = subtotal.toFixed(2);
-    document.getElementById("gst").innerText = gst.toFixed(2);
-    document.getElementById("total").innerText = total.toFixed(2);
+    document.getElementById("subtotal").innerText = formatCurrency(subtotal);
+    document.getElementById("gst").innerText = formatCurrency(gst);
+    document.getElementById("total").innerText = formatCurrency(total);
+}
+
+function renumberRows() {
+    let rows = document.querySelectorAll("#items tr");
+    rows.forEach((row, index) => {
+        row.querySelector(".sr").innerText = index + 1;
+    });
 }
 
 function addRow() {
@@ -263,12 +328,25 @@ function addRow() {
     let row = table.insertRow();
 
     row.innerHTML = `
-        <td>${rowCount}</td>
+        <td class="sr">${rowCount}</td>
         <td><textarea rows="1" oninput="autoResize(this)"></textarea></td>
-        <td><input type="number" oninput="calculate()"></td>
-        <td><input type="number" oninput="calculate()"></td>
-        <td class="amount">0</td>
+        <td><input type="number" min="0" oninput="calculate()"></td>
+        <td><input type="number" min="0" oninput="calculate()"></td>
+        <td class="amount">0.00</td>
+        <td class="actions-col no-print"><button class="delete-btn" onclick="deleteRow(this)" title="Delete row">✕</button></td>
     `;
+}
+
+function deleteRow(btn) {
+    let table = document.getElementById("items");
+    if (table.rows.length <= 1) {
+        alert("At least one item row is required. / कम से कम एक आइटम रो आवश्यक है।");
+        return;
+    }
+    let row = btn.closest("tr");
+    row.remove();
+    renumberRows();
+    calculate();
 }
 
 function toggleTransport() {
@@ -281,6 +359,54 @@ function toggleTransport() {
         document.getElementById("transport").value = 0;
         calculate();
     }
+}
+
+function toggleNote() {
+    let box = document.getElementById("noteBox");
+    box.style.display = (box.style.display === "none") ? "block" : "none";
+}
+
+function updateNoteText() {
+    // kept for future extension if note text becomes more dynamic
+}
+
+setTodayAsDefault();
+
+/* Date auto-format as DD-MM-YYYY */
+function formatDateInput(el) {
+    let digits = el.value.replace(/\D/g, "").slice(0, 8);
+    let formatted = digits;
+    if (digits.length > 4) {
+        formatted = digits.slice(0, 2) + "-" + digits.slice(2, 4) + "-" + digits.slice(4);
+    } else if (digits.length > 2) {
+        formatted = digits.slice(0, 2) + "-" + digits.slice(2);
+    }
+    el.value = formatted;
+}
+
+function setTodayAsDefault() {
+    let today = new Date();
+    let dd = String(today.getDate()).padStart(2, "0");
+    let mm = String(today.getMonth() + 1).padStart(2, "0");
+    let yyyy = today.getFullYear();
+    document.getElementById("dateInput").value = `${dd}-${mm}-${yyyy}`;
+    document.getElementById("datePicker").value = `${yyyy}-${mm}-${dd}`;
+}
+
+function openDatePicker() {
+    let picker = document.getElementById("datePicker");
+    if (typeof picker.showPicker === "function") {
+        picker.showPicker();
+    } else {
+        picker.click();
+        picker.focus();
+    }
+}
+
+function applyPickedDate(el) {
+    if (!el.value) return;
+    let [yyyy, mm, dd] = el.value.split("-");
+    document.getElementById("dateInput").value = `${dd}-${mm}-${yyyy}`;
 }
 
 /* Auto resize */
@@ -302,7 +428,8 @@ function downloadPDF() {
         html2canvas: { scale: 2 },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
     }).from(element).save().then(() => {
-        buttons.forEach(btn => btn.style.display = 'inline-block');
+        buttons.forEach(btn => btn.style.display = btn.classList.contains('actions-col') ? '' : 'inline-block');
+        document.querySelectorAll('.actions-col.no-print').forEach(td => td.style.display = '');
     });
 }
 </script>
